@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090b0e" />
+    <meta name="description" content="A navigable spatial concept of the AWS HQ2 AI Experience Center." />
+    <title>AWS HQ2 — AI Experience Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="Interactive 3D model of the AI Experience Center"></canvas>
+      <div class="photo-film" id="photoFilm" aria-hidden="true">
+        <div class="film-shot" id="filmShotA"><img alt="" /><img alt="" /></div>
+        <div class="film-shot" id="filmShotB"><img alt="" /><img alt="" /></div>
+        <div class="film-seam"></div>
+      </div>
+      <div class="vignette" aria-hidden="true"></div>
+      <div class="grain" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <div class="brand" aria-label="AI Experience Center">
+          <span class="brand-mark"><span></span><span></span><span></span></span>
+          <span class="brand-copy"><strong>AI EXPERIENCE CENTER</strong><small>A SPATIAL EXPERIENCE</small></span>
+        </div>
+        <div class="topbar-right"><span class="location">HQ2 <i></i> ARLINGTON, VIRGINIA</span><button id="soundButton" class="icon-button" aria-label="Toggle sound" title="Toggle sound"><span class="sound-icon">◖))</span></button></div>
+      </header>
+
+      <div class="chapter-info" id="chapterInfo">
+        <div class="eyebrow"><span class="live-dot"></span><span id="chapterIndex">01 / 06</span><span class="eyebrow-line"></span> <span id="experienceLabel">THE WALKTHROUGH</span></div>
+        <h1 id="chapterTitle">The arrival</h1>
+        <p id="chapterDescription">A blue glow marks the entrance to the Experience Center.</p>
+      </div>
+
+      <div class="enter-panel" id="enterPanel">
+        <div class="enter-inner">
+          <div class="enter-kicker">STEP INSIDE</div>
+          <h2>Step inside.<br /><em>See what's next.</em></h2>
+          <p>A cinematic, navigable reconstruction of the AWS HQ2 AI Experience Center, created from eight on-site photographs.</p>
+          <button id="enterButton" class="primary-button"><span>BEGIN EXPERIENCE</span><span class="button-arrow">↗</span></button>
+          <div class="enter-hint">DRAG TO LOOK&nbsp;&nbsp; / &nbsp;&nbsp;SCROLL TO MOVE&nbsp;&nbsp; / &nbsp;&nbsp;WASD TO WALK</div>
+        </div>
+      </div>
+
+      <div class="right-rail" id="rightRail" aria-label="Tour chapters">
+        <button class="rail-item active" data-stop="0" aria-label="Go to arrival"><span class="rail-index">01</span><span class="rail-line"></span><span class="rail-label">ARRIVAL</span></button>
+        <button class="rail-item" data-stop="1" aria-label="Go to the gallery"><span class="rail-index">02</span><span class="rail-line"></span><span class="rail-label">THE GALLERY</span></button>
+        <button class="rail-item" data-stop="2" aria-label="Go to exhibit bays"><span class="rail-index">03</span><span class="rail-line"></span><span class="rail-label">EXHIBITS</span></button>
+        <button class="rail-item" data-stop="3" aria-label="Go to details"><span class="rail-index">04</span><span class="rail-line"></span><span class="rail-label">THE DETAILS</span></button>
+        <button class="rail-item" data-stop="4" aria-label="Go to collaboration room"><span class="rail-index">05</span><span class="rail-line"></span><span class="rail-label">BEYOND THE GLASS</span></button>
+        <button class="rail-item" data-stop="5" aria-label="Go to the demo room"><span class="rail-index">06</span><span class="rail-line"></span><span class="rail-label">THE DEMO ROOM</span></button>
+      </div>
+
+      <footer class="bottom-bar" id="bottomBar">
+        <div class="mode-switch" role="group" aria-label="Experience mode"><button class="mode active" id="tourMode">GUIDED TOUR</button><button class="mode" id="exploreMode">FREE EXPLORE</button><button class="mode" id="filmMode">PHOTO FILM</button></div>
+        <div class="timeline" id="timeline"><button id="playButton" aria-label="Pause tour" title="Pause or play tour"><span id="playGlyph">Ⅱ</span></button><span class="timeline-time" id="elapsed">00:00</span><input id="scrubber" type="range" min="0" max="1000" value="0" aria-label="Tour progress" /><span class="timeline-time">01:00</span></div>
+        <div class="bottom-actions"><button id="photoButton" class="text-button">PHOTO REFERENCES <span>↗</span></button><button id="fullscreenButton" class="icon-button" aria-label="Toggle fullscreen" title="Fullscreen">⛶</button></div>
+      </footer>
+
+      <div class="controls-note" id="controlsNote">DRAG TO LOOK <span>·</span> SCROLL OR WASD TO MOVE <span>·</span> SHIFT TO MOVE FASTER</div>
+
+      <aside class="photo-drawer" id="photoDrawer" aria-hidden="true">
+        <div class="drawer-head"><div><small>THE SOURCE MATERIAL</small><h2>Eight views.<br />One space.</h2></div><button id="closeDrawer" class="close-button" aria-label="Close photo references">×</button></div>
+        <p>Reference photography from inside the HQ2 Experience Center. The 3D model is an architectural interpretation of the space.</p>
+        <div id="photoGrid" class="photo-grid"></div>
+      </aside>
+      <div class="drawer-scrim" id="drawerScrim"></div>
+      <div id="loading" class="loading"><span class="loading-mark"></span><span>BUILDING THE EXPERIENCE</span></div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
