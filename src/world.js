@@ -199,7 +199,8 @@ export function createWorld(renderer) {
   plane(scene,6.75,.89,0,3.61,-5.43,signMat);
 
   const animatedScreens=[];
-  function kiosk(parent, {x,z,rotation=0,type='dark',width=2.38,photo=null}) {
+  const interactiveScreens=[];
+  function kiosk(parent, {x,z,rotation=0,type='dark',width=2.38,photo=null,demoId}) {
     const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=rotation;parent.add(g);
     const outer=box(g,width,2.75,.24,0,1.38,.13,color.white);outer.castShadow=true;
     box(g,width-.16,2.52,.025,0,1.39,.27,new THREE.MeshStandardMaterial({color:0xd4d6d3,roughness:.35}));
@@ -210,8 +211,11 @@ export function createWorld(renderer) {
     let screenMap=createScreenTexture(type);
     const screenMat=new THREE.MeshBasicMaterial({map:screenMap,toneMapped:false});
     const screen=plane(g,screenW-.11,1.04,0,2.02,.358,screenMat);
+    screen.userData.demoId=demoId;
+    screen.userData.interactive=Boolean(demoId);
     if(photo){const img=loader.load(`/assets/screens/${photo}`, t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;screenMat.map=t;screenMat.needsUpdate=true;});img.colorSpace=THREE.SRGBColorSpace;}
     animatedScreens.push(screen);
+    if(demoId) interactiveScreens.push(screen);
     // Camera bar, touch console, logo, and sharp inset edge lighting.
     box(g,.18,.045,.05,0,2.63,.38,color.blackMetal);
     cylinder(g,.038,.038,.028,0,2.66,.38,color.silver);
@@ -228,13 +232,13 @@ export function createWorld(renderer) {
   }
   // Matching pairs of evenly spaced screens line the side walls, with three
   // more below the main title.
-  kiosk(scene,{x:7.405,z:2.24,rotation:-Math.PI/2,type:'clinical',photo:'gallery-people.jpg'});
-  kiosk(scene,{x:7.405,z:-2.24,rotation:-Math.PI/2,type:'dark',photo:'gallery-dark.jpg'});
-  kiosk(scene,{x:-7.405,z:2.24,rotation:Math.PI/2,type:'purple',photo:'gallery-purple.jpg'});
-  kiosk(scene,{x:-7.405,z:-2.24,rotation:Math.PI/2,type:'dark',photo:'gallery-dark.jpg'});
-  kiosk(scene,{x:-4.35,z:-5.42,type:'orange',width:2.65,photo:'gallery-orange.jpg'});
-  kiosk(scene,{x:0,z:-5.42,type:'dark',width:2.65,photo:'gallery-dark.jpg'});
-  kiosk(scene,{x:4.35,z:-5.42,type:'clinical',width:2.65,photo:'gallery-people.jpg'});
+  kiosk(scene,{x:7.405,z:2.24,rotation:-Math.PI/2,type:'clinical',photo:'gallery-people.jpg',demoId:'care-journey'});
+  kiosk(scene,{x:7.405,z:-2.24,rotation:-Math.PI/2,type:'dark',photo:'gallery-dark.jpg',demoId:'operations-pulse'});
+  kiosk(scene,{x:-7.405,z:2.24,rotation:Math.PI/2,type:'purple',photo:'gallery-purple.jpg',demoId:'experience-builder'});
+  kiosk(scene,{x:-7.405,z:-2.24,rotation:Math.PI/2,type:'dark',photo:'gallery-dark.jpg',demoId:'knowledge-studio'});
+  kiosk(scene,{x:-4.35,z:-5.42,type:'orange',width:2.65,photo:'gallery-orange.jpg',demoId:'creative-lab'});
+  kiosk(scene,{x:0,z:-5.42,type:'dark',width:2.65,photo:'gallery-dark.jpg',demoId:'decision-console'});
+  kiosk(scene,{x:4.35,z:-5.42,type:'clinical',width:2.65,photo:'gallery-people.jpg',demoId:'customer-journey'});
 
   // Pendants, glass bulbs and black ceiling services.
   const pendants=[[-5.7,1.5],[-2.4,-1.3],[1.15,2.85],[4.28,-.95],[6.08,-3.72],[-1.25,-4.0]];
@@ -401,5 +405,5 @@ export function createWorld(renderer) {
   const key=new THREE.DirectionalLight(0xf4f6fa,1.1);key.position.set(-3.5,6.6,2);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=15;key.shadow.camera.bottom=-15;key.shadow.normalBias=.035;key.shadow.bias=-.00018;scene.add(key);
   for(const z of [-3.0,0,3.0]){const l=new THREE.PointLight(0xddefff,1.45,4.8,2);l.position.set(5.85,2.65,z);scene.add(l);}
   const farFill=new THREE.PointLight(0xe7efff,1.35,6,2);farFill.position.set(-1.5,2.7,-4.4);scene.add(farFill);
-  return {scene, animatedScreens, blueLight};
+  return {scene, animatedScreens, interactiveScreens, blueLight};
 }

@@ -17,6 +17,7 @@ Open <http://127.0.0.1:5186/>. For a distributable build, run `npm run build`; t
 - **Free explore:** drag to look, scroll or use W/A/S/D or arrow keys to walk, and hold Shift to move faster.
 - **Photo film:** plays a slow moving paired-photo sequence drawn from all eight source images. This is intentionally a photographic view, separate from the 3D model.
 - **Photo references:** opens the original views for comparison. Fullscreen and optional ambient sound are available from the top and bottom controls.
+- **Interactive TV demos:** click any kiosk screen to open a contextual web-app template. Close it or press Escape to return to the exact experience state.
 
 ## Reconstruction notes
 

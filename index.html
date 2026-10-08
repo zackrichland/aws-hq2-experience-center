@@ -62,6 +62,18 @@
 
       <div class="controls-note" id="controlsNote">DRAG TO LOOK <span>·</span> SCROLL OR WASD TO MOVE <span>·</span> SHIFT TO MOVE FASTER</div>
 
+      <section class="demo-overlay" id="demoOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="demoTitle">
+        <div class="demo-shell">
+          <header class="demo-header">
+            <div><div class="demo-kicker" id="demoKicker">DEMO TEMPLATE</div><h2 id="demoTitle">Experience Builder</h2></div>
+            <button id="closeDemo" class="demo-close" aria-label="Close demo and resume experience"><span>RESUME EXPERIENCE</span><b>×</b></button>
+          </header>
+          <p class="demo-description" id="demoDescription"></p>
+          <div class="demo-stage" id="demoWorkspace"></div>
+          <footer class="demo-footer"><span>DEMO TEMPLATE · REPLACE THIS SURFACE WITH YOUR LIVE WEB APP WHEN READY</span><button id="resumeDemo" class="demo-resume">CLOSE &amp; RESUME <span>↗</span></button></footer>
+        </div>
+      </section>
+
       <aside class="photo-drawer" id="photoDrawer" aria-hidden="true">
         <div class="drawer-head"><div><small>THE SOURCE MATERIAL</small><h2>Eight views.<br />One space.</h2></div><button id="closeDrawer" class="close-button" aria-label="Close photo references">×</button></div>
         <p>Reference photography from inside the HQ2 Experience Center. The 3D model is an architectural interpretation of the space.</p>

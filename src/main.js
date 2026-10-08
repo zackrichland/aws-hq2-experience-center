@@ -22,7 +22,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, .045, 90);
 const pmrem = new THREE.PMREMGenerator(renderer);
 const environment = pmrem.fromScene(new RoomEnvironment(), .04);
-const { scene, blueLight } = createWorld(renderer);
+const { scene, blueLight, interactiveScreens } = createWorld(renderer);
 scene.environment = environment.texture;
 scene.environmentIntensity = .42;
 
@@ -65,8 +65,67 @@ const keys = new Set();
 const tmp = new THREE.Vector3();
 const forward = new THREE.Vector3();
 const right = new THREE.Vector3();
+const raycaster = new THREE.Raycaster();
+const screenPointer = new THREE.Vector2();
+let activeDemo = null;
+let resumePlaying = false;
+
+const demoTemplates = {
+  'care-journey': {kicker:'CARE EXPERIENCE · DEMO TEMPLATE',title:'Care Journey',description:'A placeholder for a patient or customer journey application.',accent:'#8e76ff',metric:'94%',metricLabel:'NEXT STEP CONFIDENCE',items:['Review a moment in the journey','Surface a tailored next action','Hand off with context intact']},
+  'operations-pulse': {kicker:'OPERATIONS · DEMO TEMPLATE',title:'Operations Pulse',description:'A placeholder for a live operational signal and response workflow.',accent:'#5d7cff',metric:'12',metricLabel:'SIGNALS NEEDING REVIEW',items:['Monitor a selected operation','Prioritize the next signal','Open a detailed response flow']},
+  'experience-builder': {kicker:'BUILD · DEMO TEMPLATE',title:'Experience Builder',description:'A placeholder for configuring a new AI experience with a visitor.',accent:'#ab78ff',metric:'03',metricLabel:'EXPERIENCE MODULES',items:['Choose an experience objective','Shape the conversation','Preview the visitor view']},
+  'knowledge-studio': {kicker:'KNOWLEDGE · DEMO TEMPLATE',title:'Knowledge Studio',description:'A placeholder for guided exploration of trusted internal knowledge.',accent:'#597eff',metric:'48',metricLabel:'SOURCES CONNECTED',items:['Ask a focused question','Review cited evidence','Save a reusable answer']},
+  'creative-lab': {kicker:'CREATIVE · DEMO TEMPLATE',title:'Creative Lab',description:'A placeholder for an image, concept, or campaign generation demo.',accent:'#ff7654',metric:'06',metricLabel:'CONCEPTS IN REVIEW',items:['Set a creative direction','Generate a first pass','Refine with the team']},
+  'decision-console': {kicker:'DECISION · DEMO TEMPLATE',title:'Decision Console',description:'A placeholder for a decision-support web app and live scenario view.',accent:'#607dff',metric:'87%',metricLabel:'SCENARIO READINESS',items:['Frame a business choice','Compare scenarios','Share the recommendation']},
+  'customer-journey': {kicker:'CUSTOMER · DEMO TEMPLATE',title:'Customer Journey',description:'A placeholder for a customer experience and service design workflow.',accent:'#75a7f5',metric:'08',metricLabel:'MOMENTS TO DESIGN',items:['Map a customer moment','Find the friction point','Prototype the improvement']},
+};
 
 function smoothstep(t){ return t*t*(3-2*t); }
+function renderDemo(demo) {
+  $('#demoKicker').textContent=demo.kicker;
+  $('#demoTitle').textContent=demo.title;
+  $('#demoDescription').textContent=demo.description;
+  $('#demoWorkspace').style.setProperty('--demo-accent',demo.accent);
+  $('#demoWorkspace').innerHTML=`
+    <div class="demo-appbar"><span class="demo-appmark">AI</span><span>${demo.title}</span><span class="demo-status"><i></i> READY FOR YOUR APP</span></div>
+    <div class="demo-body">
+      <aside class="demo-nav"><button class="active" data-demo-tab="overview">OVERVIEW</button><button data-demo-tab="workflow">WORKFLOW</button><button data-demo-tab="activity">ACTIVITY</button><button data-demo-tab="settings">SETUP</button></aside>
+      <main class="demo-main">
+        <div class="demo-main-head"><div><span class="demo-overline">OVERVIEW</span><h3>Ready for a live demo</h3><p>Use this shell until the full web app is ready to connect.</p></div><div class="demo-metric"><strong>${demo.metric}</strong><span>${demo.metricLabel}</span></div></div>
+        <div class="demo-flow">${demo.items.map((item,index)=>`<button class="demo-flow-item" data-demo-action="${index}"><span>0${index+1}</span><strong>${item}</strong><b>→</b></button>`).join('')}</div>
+        <div class="demo-placeholder"><span class="demo-placeholder-icon">+</span><div><strong>Your web app mounts here</strong><p>Replace this template with an embedded route or your production demo URL.</p></div><button data-demo-action="launch">OPEN SAMPLE FLOW</button></div>
+        <div class="demo-toast" aria-live="polite"></div>
+      </main>
+    </div>`;
+}
+function openDemo(demoId) {
+  const demo=demoTemplates[demoId];
+  if(!demo || activeDemo) return;
+  activeDemo=demoId;
+  resumePlaying=playing;
+  playing=false;
+  keys.clear();
+  renderDemo(demo);
+  app.classList.add('demo-open');
+  $('#demoOverlay').setAttribute('aria-hidden','false');
+  updatePlayButton();
+  requestAnimationFrame(()=>$('#closeDemo').focus());
+}
+function closeDemo() {
+  if(!activeDemo) return;
+  activeDemo=null;
+  $('#demoOverlay').setAttribute('aria-hidden','true');
+  app.classList.remove('demo-open');
+  if(entered && mode!=='explore') playing=resumePlaying;
+  updatePlayButton();
+}
+function findDemoAt(event) {
+  const rect=canvas.getBoundingClientRect();
+  screenPointer.set(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
+  raycaster.setFromCamera(screenPointer,camera);
+  const hit=raycaster.intersectObjects(interactiveScreens,false)[0];
+  return hit?.object?.userData?.demoId || null;
+}
 function updateFilm() {
   const at=Math.min(filmPairs.length-1,Math.floor(progress*(filmPairs.length-1)));
   const next=Math.min(filmPairs.length-1,at+1);
@@ -175,6 +234,19 @@ $('#scrubber').addEventListener('input',e=>{ if(mode==='explore')setMode('tour')
 document.querySelectorAll('.rail-item').forEach((button,index)=>button.addEventListener('click',()=>{if(mode==='explore')setMode('tour');playing=false;updatePlayButton();setProgress(index/(stops.length-1));}));
 $('#photoButton').addEventListener('click',openDrawer);$('#closeDrawer').addEventListener('click',closeDrawer);$('#drawerScrim').addEventListener('click',closeDrawer);
 $('#fullscreenButton').addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen?.();});
+$('#closeDemo').addEventListener('click',closeDemo);
+$('#resumeDemo').addEventListener('click',closeDemo);
+$('#demoWorkspace').addEventListener('click',event=>{
+  const tab=event.target.closest('[data-demo-tab]');
+  if(tab){document.querySelectorAll('[data-demo-tab]').forEach(button=>button.classList.toggle('active',button===tab));return;}
+  const action=event.target.closest('[data-demo-action]');
+  if(action){
+    const toast=$('#demoWorkspace .demo-toast');
+    toast.textContent=action.dataset.demoAction==='launch'?'Sample flow opened — replace it with your demo when ready.':'Template step selected — wire this control to your app.';
+    toast.classList.add('visible');
+    window.setTimeout(()=>toast.classList.remove('visible'),2600);
+  }
+});
 
 const photos = [
   ['4659','Full gallery'],['4660','Exhibit wall'],['4661','Interactive bays'],['4662','Entry and moss wall'],
@@ -182,22 +254,29 @@ const photos = [
 ];
 $('#photoGrid').innerHTML=photos.map(([number,label])=>`<figure class="photo-card"><img src="/assets/reference/IMG_${number}.jpg" alt="${label}" loading="lazy"/><figcaption>IMG_${number} · ${label.toUpperCase()}</figcaption></figure>`).join('');
 
-canvas.addEventListener('pointerdown',e=>{if(!entered||mode==='film')return;pointer={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointerdown',e=>{if(!entered||mode==='film'||activeDemo)return;pointer={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false};canvas.setPointerCapture(e.pointerId);});
 canvas.addEventListener('pointermove',e=>{
-  if(!pointer)return;
+  if(!pointer){if(entered&&!activeDemo&&mode!=='film')canvas.style.cursor=findDemoAt(e)?'pointer':'grab';return;}
   const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;pointer.x=e.clientX;pointer.y=e.clientY;
+  if(Math.hypot(e.clientX-pointer.startX,e.clientY-pointer.startY)>7)pointer.moved=true;
   if(mode==='tour') {tourLookX=THREE.MathUtils.clamp(tourLookX-dx*.0035,-.62,.62);tourLookY=THREE.MathUtils.clamp(tourLookY+dy*.0035,-.38,.38);setTourPose();}
   else {yaw-=dx*.0033;pitch=THREE.MathUtils.clamp(pitch+dy*.0033,-1.25,1.25);setFreePose();}
 });
-canvas.addEventListener('pointerup',()=>pointer=null);canvas.addEventListener('pointercancel',()=>pointer=null);
+canvas.addEventListener('pointerup',e=>{
+  const clicked=pointer&&!pointer.moved?findDemoAt(e):null;
+  pointer=null;
+  if(clicked)openDemo(clicked);
+});
+canvas.addEventListener('pointercancel',()=>pointer=null);
 canvas.addEventListener('wheel',e=>{
-  if(!entered)return;e.preventDefault();
+  if(!entered||activeDemo)return;e.preventDefault();
   if(mode==='tour'||mode==='film'){playing=false;updatePlayButton();setProgress(progress+THREE.MathUtils.clamp(e.deltaY*.00016,-.06,.06));}
   else moveFree(Math.sign(e.deltaY)*Math.min(.45,Math.abs(e.deltaY)*.0012));
 },{passive:false});
 window.addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
-  if(e.key==='Escape')closeDrawer();
+  if(e.key==='Escape'){if(activeDemo)closeDemo();else closeDrawer();return;}
+  if(activeDemo)return;
   if(e.key===' '&&entered){ if(mode==='tour'||mode==='film'){playing=!playing;updatePlayButton();}else setMode('tour'); }
   if(['w','a','s','d','W','A','S','D','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Shift'].includes(e.key)){
     if(entered && mode!=='explore')setMode('explore');keys.add(e.key.toLowerCase());
