@@ -293,14 +293,6 @@ export function createWorld(renderer) {
   const blueLight=new THREE.PointLight(0x134bff,5.8,5.0,2);blueLight.position.set(-2.4,2.1,7.35);scene.add(blueLight);
   const floorBlue=new THREE.MeshBasicMaterial({color:0x143fff,transparent:true,opacity:.10,depthWrite:false});
   const halo=plane(scene,3.7,2.8,-3.4,.005,7.46,floorBlue);halo.rotation.x=-Math.PI/2;
-  // The brochure table sits farther inside and left of the door, clear of
-  // the direct sightline to PROTO.
-  cylinder(scene,.66,.31,.1,-4.18,1.09,5.95,color.blackMetal,40);
-  cylinder(scene,.13,.24,1.06,-4.18,.55,5.95,color.nearBlack,20);
-  cylinder(scene,.35,.35,.045,-4.18,.04,5.95,color.nearBlack,32);
-  // Acrylic brochure stand.
-  const brochure=new THREE.MeshPhysicalMaterial({color:0xb8d2e0,roughness:.06,metalness:.04,transparent:true,opacity:.45,side:THREE.DoubleSide,depthWrite:false});
-  for(let i=0;i<3;i++)box(scene,.29,.45,.08,-4.49+i*.22,1.32,5.90,brochure,false,false);
   // Rotate the two adjacent rooms to the right-hand turn behind PROTO. Keeping
   // their furniture in one local group preserves the room interiors and their
   // black-framed fronts while changing only their position in the floor plan.
